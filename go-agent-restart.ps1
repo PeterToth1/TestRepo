@@ -71,9 +71,8 @@ function DeleteAgentsFromServer {
     DeleteFile $payload
 
     # get credentials, url from settings
-    # $settings = (Get-Content 'settings.json').TrimStart('"').TrimEnd('"').Replace("\", "") | ConvertFrom-Json
-    
-    $user = 'aumel-ccuser' + ':' + ${env:AUMEL-CCUSER}
+    $settings = (Get-Content 'settings.json').TrimStart('"').TrimEnd('"').Replace("\", "") | ConvertFrom-Json
+    $user = $settings.username + ':' + $settings.password
     $url = $settings.go_url + '/api/agents'
     
     & $curl --insecure $url -u $user -H 'Accept: application/vnd.go.cd.v5+json' -o $payload
