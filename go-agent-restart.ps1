@@ -85,12 +85,14 @@ function DeleteAgentsFromServer {
         if ($agents.Count -eq 0) { return }
 
         if ($agents.Count -eq 1) {
-            @{ agent_config_state = 'disabled' } | ConvertTo-Json | Format-Json | Out-File $payload -Encoding ascii
+            @{ agent_config_state = 'Disabled' } | ConvertTo-Json | Format-Json | Out-File $payload -Encoding ascii
 
             $uuid = $agents[0].uuid
-            & $curl --trace-ascii - --insecure "$url/$uuid" -u $user -H 'Accept: application/vnd.go.cd.v5+json' -H 'Content-Type: application/json' -H 'cache-control: no-cache' -X PATCH --data-binary '@payload.json'
-            Start-Sleep -Seconds 2
-            & $curl --trace-ascii - --insecure "$url/$uuid" -u $user -H 'Accept: application/vnd.go.cd.v5+json' -H 'Content-Type: application/json' -H 'cache-control: no-cache' -X DELETE --data-binary '@payload.json'
+            & $curl --insecure "$url/$uuid" -u $user -H 'Accept: application/vnd.go.cd.v5+json' -H 'Content-Type: application/json' -X PATCH --data-binary '@payload.json'
+
+            Start-Sleep -Seconds 5
+
+            & $curl --insecure "$url/$uuid" -u $user -H 'Accept: application/vnd.go.cd.v5+json' -X DELETE
         }
         else {            
             $uuids = $agents | ForEach-Object {$_.uuid}
@@ -99,9 +101,11 @@ function DeleteAgentsFromServer {
                 agent_config_state = 'disabled'
             } | ConvertTo-Json | Format-Json | Out-File $payload -Encoding ascii
 
-            & $curl --trace-ascii - --insecure $url -u $user -H 'Accept: application/vnd.go.cd.v5+json' -H 'Content-Type: application/json' -H 'cache-control: no-cache' -X PATCH --data-binary '@payload.json'
-            Start-Sleep -Seconds 2
-            & $curl --trace-ascii - --insecure $url -u $user -H 'Accept: application/vnd.go.cd.v5+json' -H 'Content-Type: application/json' -H 'cache-control: no-cache' -X DELETE --data-binary '@payload.json'
+            & $curl --trace-ascii - --insecure $url -u $user -H 'Accept: application/vnd.go.cd.v5+json' -H 'Content-Type: application/json' -X PATCH --data-binary '@payload.json'
+
+            Start-Sleep -Seconds 5
+
+            & $curl --trace-ascii - --insecure $url -u $user -H 'Accept: application/vnd.go.cd.v5+json' -H 'Content-Type: application/json' -X DELETE --data-binary '@payload.json'
         }
 
         DeleteFile $payload
